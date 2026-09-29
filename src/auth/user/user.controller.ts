@@ -10,6 +10,7 @@ import {
     HttpStatus,
     InternalServerErrorException,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -20,7 +21,9 @@ import { Permissions } from '../decorators/permissions.decorator';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CryptoInterceptor } from 'src/common/interceptors/crypto.interceptor';
 
+@UseInterceptors(CryptoInterceptor)
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}

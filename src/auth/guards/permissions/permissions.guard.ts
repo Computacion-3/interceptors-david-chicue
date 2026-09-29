@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 
 import { PERMISSIONS_KEY } from '../../decorators/permissions.decorator';
 import { User } from '../../entities/user.entity';
+import {AppLogger} from 'src/common/logger/logger.service';
 
 interface AuthenticatedRequest extends Request {
     user?: User;
@@ -11,9 +12,11 @@ interface AuthenticatedRequest extends Request {
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-    constructor(private readonly reflector: Reflector) {}
+
+    constructor(private readonly reflector: Reflector, private readonly logger: AppLogger) {}
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         // 1. Extraemos los permisos requeridos del método manejador
+        this.logger.debug('Verificando permisos para la solicitud entrante');
         const requiredPermissions = this.reflector.get<string[]>(PERMISSIONS_KEY, context.getHandler());
 
         if (!requiredPermissions || requiredPermissions.length === 0) {
