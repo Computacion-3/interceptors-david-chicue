@@ -1,22 +1,21 @@
+import * as crypto from 'crypto';
+
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, BadRequestException } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import * as crypto from 'crypto';
 import { Request } from 'express';
-import {ConfigService} from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CryptoInterceptor implements NestInterceptor {
     private readonly algorithm: string;
     private readonly secretKey: string;
     private readonly iv: string;
-    
-    constructor(
-        configService: ConfigService,
-    ) {
-        this.algorithm = configService.get<string>('CIPHER_ALGORITHM') || 'aes-256-cbc',
-        this.secretKey = configService.get<string>('CIPHER_SECRET_KEY') || '12345678901234567890123456789012',
-        this.iv = configService.get<string>('CIPHER_IV') || '1234567890123456'
+
+    constructor(configService: ConfigService) {
+        this.algorithm = configService.get<string>('CIPHER_ALGORITHM') || 'aes-256-cbc';
+        this.secretKey = configService.get<string>('CIPHER_SECRET_KEY') || '12345678901234567890123456789012';
+        this.iv = configService.get<string>('CIPHER_IV') || '1234567890123456';
     }
     // Clave de 32 bytes (256 bits) y vector de inicialización de 16 bytes
 
@@ -38,12 +37,7 @@ export class CryptoInterceptor implements NestInterceptor {
 
     // Comprueba si el cuerpo recibido tiene la propiedad encrypted
     private hasEncryptedProperty(body: unknown): body is { encrypted: string } {
-        return (
-            typeof body === 'object' &&
-            body !== null &&
-            'encrypted' in body &&
-            typeof (body as { encrypted: unknown }).encrypted === 'string'
-        );
+        return typeof body === 'object' && body !== null && 'encrypted' in body && typeof body.encrypted === 'string';
     }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<{ encrypted: string }> {
