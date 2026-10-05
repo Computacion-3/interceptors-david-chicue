@@ -17,19 +17,17 @@ export class AppLogger implements LoggerService, OnModuleDestroy {
         const dateStamp = new Date().toISOString().split('T')[0];
         const logDir = path.join(process.cwd(), 'logs');
 
-        // Garantiza la existencia del directorio de almacenamiento
         if (!fs.existsSync(logDir)) {
             fs.mkdirSync(logDir, { recursive: true });
         }
 
         const logFile = path.join(logDir, `app-${dateStamp}.log`);
-        // Abre el stream en modo append ('a')
         this.logStream = fs.createWriteStream(logFile, { flags: 'a' });
     }
 
-    // Asocia el correlation ID al resto de la cadena asíncrona de la petición actual
-    static setCorrelationId(correlationId: string): void {
-        AppLogger.storage.enterWith({ correlationId });
+    // Ejecuta el callback (y toda su cadena asíncrona) dentro del contexto de una petición
+    static runWithCorrelationId(correlationId: string, callback: () => void): void {
+        AppLogger.storage.run({ correlationId }, callback);
     }
 
     static getCorrelationId(): string | undefined {
